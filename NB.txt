@@ -1,0 +1,49 @@
+# Step 1: Load the dataset
+data <- data.frame(
+  Weather = c("Sunny", "Sunny", "Rainy", "Rainy", "Rainy", "Sunny", "Rainy", "Sunny", "Sunny", "Rainy"),
+  Humidity = c("High", "High", "High", "Low", "Low", "Low", "High", "Low", "High", "Low"),
+  Windy = c("Yes", "No", "Yes", "Yes", "No", "Yes", "No", "No", "No", "Yes"),
+  Play = factor(c("No", "No", "Yes", "Yes", "Yes", "Yes", "No", "Yes", "No", "Yes"))
+)
+
+# Step 2: Split the dataset into training and testing sets
+set.seed(123)
+split <- sample(nrow(data), nrow(data) * 0.7)
+train <- data[split, ]
+test <- data[-split, ]
+
+# Step 3: Compute the prior probability for each class
+prior_prob <- table(train$Play) / nrow(train)
+
+# Step 4: Compute the conditional probability for each feature
+cond_prob <- list()
+for (i in 1:(ncol(train) - 1)) {
+  x <- unique(train[, i])
+  p <- numeric(length(x))
+  for (j in 1:length(x)) {
+    p[j] <- sum(train[, i] == x[j] & train$Play == "Yes") / sum(train$Play == "Yes")
+  }
+  names(p) <- x
+  cond_prob[[i]] <- p
+}
+
+
+# Step 5: Make predictions on the test set using the Naive Bayes formula
+y_pred <- character(nrow(test))
+for (i in 1:nrow(test)) {
+  probs <- numeric(length(levels(train$Play)))
+  for (j in 1:length(levels(train$Play))) {
+    prior <- prior_prob[levels(train$Play)[j]]
+    p1 <- cond_prob[[1]][as.character(test[i, 1])]
+    p2 <- cond_prob[[2]][as.character(test[i, 2])]
+    p3 <- cond_prob[[3]][as.character(test[i, 3])]
+    posterior <- prior * prod(p1, p2, p3)
+    probs[j] <- posterior
+  }
+  y_pred[i] <- levels(train$Play)[which.max(probs)]
+}
+
+
+# Step 6: Evaluate the accuracy of the classifier
+accuracy <- mean(y_pred == test$Play)
+print(paste("Accuracy:", accuracy))
