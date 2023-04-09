@@ -1,0 +1,51 @@
+# Create a data frame with sample data
+df <- data.frame(psavert = c(12, 15, 16, 18, 20, 22, 23))
+
+# Calculate SMA with window size of 3
+df$sma <- NA # create a new column for SMA
+for (i in 3:length(df$psavert)) {
+  df$sma[i] <- mean(df$psavert[(i-2):i]) # calculate the SMA
+}
+
+# Calculate WMA with window size of 5 and weights of 3, 2, 1, 2, 3
+df$wma <- NA # create a new column for WMA
+wts <- c(3, 2, 1, 2, 3) # set weights for WMA
+for (i in 5:length(df$psavert)) {
+  df$wma[i] <- sum(df$psavert[(i-4):i] * wts) / sum(wts) # calculate the WMA
+}
+
+# Print the final data frame
+df
+
+# Load the time series data
+data(AirPassengers)
+ts_data <- AirPassengers
+
+# Set the smoothing parameters
+alpha <- 0.2 # Smoothing parameter for the level
+beta <- 0.1 # Smoothing parameter for the trend
+gamma <- 0.3 # Smoothing parameter for the seasonal component
+m <- 12 # Number of periods in a season
+
+# Initialize the components
+level <- ts_data[1]
+trend <- 0
+season <- ts_data[1:m] - level
+
+# Perform exponential smoothing
+for (i in 2:length(ts_data)) {
+  # Update the level component
+  level_new <- alpha * ts_data[i] + (1 - alpha) * (level + trend)
+  # Update the trend component
+  trend_new <- beta * (level_new - level) + (1 - beta) * trend
+  # Update the seasonal component
+  season_new <- gamma * (ts_data[i] - level_new) + (1 - gamma) * season[(i - 1) %% m + 1]
+  # Compute the forecast
+  forecast <- level_new + trend_new + season_new
+  # Update the components
+  level <- level_new
+  trend <- trend_new
+  season[(i - 1) %% m + 1] <- season_new
+  # Output the forecast
+  cat("Forecast for time", i, "is", forecast, "\n")
+}
