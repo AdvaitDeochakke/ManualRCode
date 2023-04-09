@@ -17,7 +17,14 @@ merge_clusters <- function(clusters, dist_matrix) {
     for (j in (i+1):length(clusters)) {
       cluster1 <- clusters[[i]]
       cluster2 <- clusters[[j]]
+      
+      # single link
       dist_ij <- min(dist_matrix[cluster1, cluster2])
+      # avg link
+      dist_ij <- mean(dist_matrix[cluster1, cluster2])
+      # complete link
+      dist_ij <- max(dist_matrix[cluster1, cluster2])
+      
       if (dist_ij < min_dist) {
         min_dist <- dist_ij
         merge_idx <- c(i,j)
