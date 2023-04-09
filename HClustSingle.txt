@@ -1,0 +1,40 @@
+# load the iris dataset
+data(iris)
+
+# calculate the Euclidean distance matrix
+dist_matrix <- as.matrix(dist(iris[,1:4]))
+
+# initialize clusters as each individual data point
+clusters <- list()
+for (i in 1:nrow(iris)) {
+  clusters[[i]] <- i
+}
+
+# define a function to merge two clusters based on the minimum distance between their members
+merge_clusters <- function(clusters, dist_matrix) {
+  min_dist <- Inf
+  for (i in 1:(length(clusters)-1)) {
+    for (j in (i+1):length(clusters)) {
+      cluster1 <- clusters[[i]]
+      cluster2 <- clusters[[j]]
+      dist_ij <- min(dist_matrix[cluster1, cluster2])
+      if (dist_ij < min_dist) {
+        min_dist <- dist_ij
+        merge_idx <- c(i,j)
+      }
+    }
+  }
+  # merge the two clusters with minimum distance
+  new_cluster <- c(clusters[[merge_idx[1]]], clusters[[merge_idx[2]]])
+  clusters <- clusters[-merge_idx]
+  clusters <- c(clusters, list(new_cluster))
+  return(clusters)
+}
+
+# perform hierarchical clustering until all data points are in the same cluster
+while (length(clusters) > 5) {
+  clusters <- merge_clusters(clusters, dist_matrix)
+}
+
+# print the final cluster assignments
+print(clusters)
