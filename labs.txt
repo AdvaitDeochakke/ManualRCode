@@ -147,3 +147,249 @@ fit1 <- lm(Examination ~ Fertility + Agriculture + Catholic + Education)
 # Summarize the model fit
 summary(fit1)
 
+Lab 4
+
+boxplot(data)
+
+aovFirst <- aov(First ~ Second+Third, data=data)
+summary(aovFirst)
+
+data <- PlantGrowth
+boxplot(data$weight ~ data$group)
+
+aov.plants <- aov(weight ~ group, data=data)
+summary(aov.plants)
+
+library(granovaGG)
+data("poison")
+model <- aov(RateSurvTime ~ Treatment, data = poison)
+summary(model)
+boxplot(RateSurvTime ~ Treatment, data = poison, xlab = "Treatment", ylab = "RateSurvTime")
+
+lab 5
+
+library(lattice)
+xyplot(psavert + unemploy/pop*100 ~ date,
+main="USA economics raw plot",
+key = list(space="right",
+lines=list(col=c("blue","magenta"), lty=c(2,2),
+lwd=6),
+text=list(c("Personal Savings Rate", "Unemployment
+Rate"))),
+xlab="Date",
+ylab="Personal Savings Rate (blue)\n Unemployment Rate per
+million (pink)")
+
+library(TTR)
+library(forecast)
+library(lubridate)
+
+df$date <- ymd(df$date) # Convert Date column to date format
+# Simple Moving Average
+df$sma <- SMA(df$psavert, n = 5)
+# Weighted Moving Average
+df$wma <- WMA(df$psavert, n=5, wts=c(3, 2, 1, 2, 3))
+# Exponential Smoothing
+ts_psavert <- ts(df$psavert, start=c(1967, 01), frequency=12)
+exp_smooth1 <- HoltWinters(ts_psavert, alpha=0.2, beta=FALSE)
+# ARIMA
+arima1 <- auto.arima(ts_psavert)
+library(graphics)
+plot(exp_smooth1$fitted[,1], xlab="Years", ylab="Personal Savings Rate", main="HoltWinters Chart", col=lines(ts_psavert, col="black")
+
+plot(forecast(arima1, h=20), xlab="Years", ylab="Personal Savings Rate", main="ARIMA Chart", col="red", lines(ts_psavert, col="green")
+
+ggplot(df, aes(x=date)) +
+geom_line(aes(y=psavert, color="psavert")) +
+geom_line(aes(y=sma, color="SMA"), linetype="dashed") +
+geom_line(aes(y=wma, color="WMA"), linetype="dotted") +
+#geom_line(aes(y=exp_smooth, color="Exp. Smooth")) +
+ggtitle("Personal Savings Rate Moving Averages") +
+scale_color_discrete(name="Line Type", labels=c("Personal Savings Rate", "SMA", "WMA")) + #, "Exp. Smxlab("Year") +
+ylab("Rate")
+
+# get the forecast
+fcst1 <- forecast(exp_smooth1)
+# mean absolute error
+exp_smooth_mae <- mean(abs(fcst1$residuals), na.rm = TRUE)
+# mean squared error
+exp_smooth_mse <- mean(fcst1$residualsˆ2, na.rm = TRUE)
+# root of mean squared error
+exp_smooth_rmse <- sqrt(exp_smooth_mse)
+# mean absolute percentage error
+exp_smooth_mape <- mean(abs(fcst1$residuals/df$psavert), na.rm = TRUE)
+fcst2 <- forecast(arima1)
+arima_mae <- mean(abs(fcst2$residuals), na.rm = TRUE)
+arima_mse <- mean(fcst2$residualsˆ2, na.rm = TRUE)
+arima_rmse <- sqrt(exp_smooth_mse)
+arima_mape <- mean(abs(fcst2$residuals/df$psavert), na.rm = TRUE)
+
+MSE_sma <- mean((df$psavert - df$sma)ˆ2, na.rm = TRUE)
+RMSE_sma <- sqrt(MSE_sma)
+sma_mape <- mean(abs((df$psavert - df$sma) / df$psavert), na.rm = TRUE) * 100
+
+library(knitr)
+accuracy_metrics <- data.frame(Model = c("Simple Moving Average", "Weighted Moving Average", "ExponentiaMAPE =
+c(sma_mape, wma_mape, exp_smooth_mape, arima_mape),
+MSE = c(MSE_sma, MSE_wma, exp_smooth_mse, arima_mse),
+RMSE = c(RMSE_sma, RMSE_wma, exp_smooth_rmse, arima_rmse))
+kable(accuracy_metrics, caption = "Accuracy Metrics for Time Series Models")
+
+lab 6
+
+# First, separate the target variable and numeric feature variables
+data.class <- data$diagnosis
+data.class <- as.factor(data.class)
+data.numeric <- data[sapply(data, is.numeric)]
+data.values <- data.numeric[!names(data.numeric) %in% c("id")]
+
+# Create a sample of indices to split the data into train and test sets
+indexes <- sample(1:nrow(data.values), 0.7 * nrow(data.values))
+# Split the data into training and test sets
+dataX.train <- data.values[indexes, ]
+dataX.test <- data.values[-indexes, ]
+dataY.train <- data.class[indexes]
+dataY.test <- data.class[-indexes]
+
+# Logistic Regression Model
+model_logit <- glm(dataY.train ~ ., data=dataX.train, family="binomial")
+
+# predictions are numerical (regression) confert to factors
+predictions_logit <- as.factor(
+ifelse(
+predict(model_logit,
+newdata = dataX.test,
+type = "response") > 0.5, "M", "B"))
+# library for confusion matrix
+library(caret)
+csm <- confusionMatrix(predictions_logit, dataY.test)
+print(csm)
+
+lab 7
+
+library(e1071)
+library(dplyr)
+
+iris_summary <- iris %>%
+group_by(Species) %>%
+summarise(
+count = n(),
+mean_sepal_length = mean(Sepal.Length),
+mean_sepal_width = mean(Sepal.Width),
+mean_petal_length = mean(Petal.Length),
+mean_petal_width = mean(Petal.Width),
+sd_sepal_length = sd(Sepal.Length),
+sd_sepal_width = sd(Sepal.Width),
+sd_petal_length = sd(Petal.Length),
+sd_petal_width = sd(Petal.Width)
+)
+print(iris_summary)
+
+set.seed(1143)
+train <- sample(nrow(iris), nrow(iris)*0.7)
+train_data <- iris[train, ]
+test_data <- iris[-train, ]
+nb_model <- naiveBayes(Species ~ ., data=train_data)
+nb_train_pred <- predict(nb_model, train_data)
+nb_test_pred <- predict(nb_model, test_data)
+
+nb_results_df <- data.frame(
+dataset = c(rep("training", length(nb_train_pred)), rep("testing", length(nb_test_pred))),
+predicted = c(nb_train_pred, nb_test_pred),
+actual = c(train_data$Species, test_data$Species)
+)
+
+library(ggplot2)
+ggplot(nb_results_df, aes(x = dataset, fill = predicted == actual)) +
+geom_bar(position = "fill") +
+scale_fill_manual(values = c("darkorange", "steelblue")) +
+ggtitle("Naive Bayes Classification Results - Accuracy") +
+ylab("Proportion") +
+xlab("Dataset")
+
+bigg <- ggplot(test_data, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) +
+geom_point() +
+ggtitle("Test Data - Scatter Plot") +
+xlab("Sepal Length") +
+ylab("Sepal Width")
+nb_g <- ggplot(test_data, aes(x = Sepal.Length, y = Sepal.Width, color = nb_test_pred)) +
+geom_point() +
+ggtitle("NaiveBayes Predictions") +
+xlab("Sepal Length") +
+ylab("Sepal Width")
+
+library(caret)
+scores_df <- data.frame(model=character(), Accuracy=numeric(), Kappa=numeric(), stringsAsFactors = FALSEnb_confmat <- confusionMatrix(nb_test_pred, test_data$Species)
+new_row <- data.frame(model = "Naive Bayes",
+Accuracy = nb_confmat$overall["Accuracy"],
+Kappa = nb_confmat$overall["Kappa"])
+scores_df <- rbind(scores_df, new_row)
+print(nb_confmat)
+
+library(randomForest)
+rf_model <- randomForest(Species ~., data=train_data)
+rf_train_pred <- predict(rf_model, train_data)
+rf_test_pred <- predict(rf_model, test_data)
+
+rf_results_df <- data.frame(
+dataset = c(rep("training", length(rf_train_pred)), rep("testing", length(rf_test_pred))),
+predicted = c(rf_train_pred, rf_test_pred),
+actual = c(train_data$Species, test_data$Species)
+)
+
+library(ggplot2)
+ggplot(rf_results_df, aes(x = dataset, fill = predicted == actual)) +
+geom_bar(position = "fill") +
+scale_fill_manual(values = c("darkorange", "steelblue")) +
+ggtitle("RandomForest Results - Accuracy") +
+ylab("Proportion") +
+xlab("Dataset")
+
+rf_g <- ggplot(test_data, aes(x = Sepal.Length, y = Sepal.Width, color = rf_test_pred)) +
+geom_point() +
+ggtitle("Random Forest Predictions") +
+xlab("Sepal Length") +
+ylab("Sepal Width")
+
+rf_confmat <- confusionMatrix(rf_test_pred, test_data$Species)
+new_row <- data.frame(model = "Random Forest",
+Accuracy = rf_confmat$overall["Accuracy"],
+Kappa = rf_confmat$overall["Kappa"])
+scores_df <- rbind(scores_df, new_row)
+print(rf_confmat)
+
+#it is under e1071 package
+svm_model <- svm(Species ~., data=train_data)
+svm_train_pred <- predict(svm_model, train_data)
+svm_test_pred <- predict(svm_model, test_data)
+
+svm_results_df <- data.frame(
+dataset = c(rep("training", length(svm_train_pred)), rep("testing", length(svm_test_pred))),
+predicted = c(svm_train_pred, svm_test_pred),
+actual = c(train_data$Species, test_data$Species)
+)
+
+library(ggplot2)
+ggplot(svm_results_df, aes(x = dataset, fill = predicted == actual)) +
+geom_bar(position = "fill") +
+scale_fill_manual(values = c("darkorange", "steelblue")) +
+ggtitle("Support Vector Machine - Accuracy") +
+ylab("Proportion") +
+xlab("Dataset")
+
+svm_g <- ggplot(test_data, aes(x = Sepal.Length, y = Sepal.Width, color = svm_test_pred)) +
+geom_point() +
+ggtitle("SVM Prediction") +
+xlab("Sepal Length") +
+ylab("Sepal Width")
+svm_confmat <- confusionMatrix(svm_test_pred, test_data$Species)
+new_row <- data.frame(model = "SVM",
+Accuracy = svm_confmat$overall["Accuracy"],
+Kappa = svm_confmat$overall["Kappa"])
+scores_df <- rbind(scores_df, new_row)
+print(svm_confmat)
+
+
+library(gridExtra)
+grid.arrange(bigg, nb_g, rf_g, svm_g, nrow = 2, ncol = 2)
+print(scores_df)
