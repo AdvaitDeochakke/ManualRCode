@@ -393,3 +393,58 @@ print(svm_confmat)
 library(gridExtra)
 grid.arrange(bigg, nb_g, rf_g, svm_g, nrow = 2, ncol = 2)
 print(scores_df)
+
+lab 8
+# set the working directory to the folder containing the CSV file
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+# read the CSV file into R
+wine <- read.csv("wineQualityN.csv")
+wine <- na.omit(wine)
+# show the first 5 rows of the data
+head(wine, 5)
+
+library(cluster)
+scores <- data.frame("Method" = NULL, "Silhouette" = NULL)
+
+# Perform k-means clustering with k=2
+set.seed(1143)
+k <- 2
+# wine[0] is the class labels of Red, White, and Blue
+kmeans_fit <- kmeans(wine[,2:13], k)
+# Compute the within-cluster sum of squares (WSS)
+# wss <- sum(kmeans_fit$withinss)
+# Compute the between-cluster sum of sqaures (BSS)
+# bss <- kmeans_fit$betweenss # total sum of squares - within ss
+# Compute the silhouette score for each point
+sil_width <- silhouette(kmeans_fit$cluster, dist(wine[,2:13]))
+# Compute the average silhouette score for the whole clustering
+sil <- mean(sil_width[,3])
+# Plot the clustering results
+clusplot(wine[,2:13], kmeans_fit$cluster, color=TRUE, shade=TRUE, labels=2, lines=0, main="Cluster Plot")
+new_row = data.frame("Method"="K-Means", "Silhouette"=sil)
+scores <- rbind(scores, new_row)
+
+# apply k-medoids clustering with k=2
+kmed <- pam(wine[2:13], k=2, diss=TRUE)
+## Warning in as.dist.default(x): non-square matrix
+# Compute the silhouette score for each point
+sil_width <- silhouette(kmeans_fit$cluster, dist(wine[,2:13]))
+# Compute the average silhouette score for the whole clustering
+sil <- mean(sil_width[,3])
+# Plot the clustering results
+clusplot(wine[,2:13], kmed$cluster, color=TRUE, shade=TRUE, labels=2, lines=0, main="Cluster Plot for K-Medoits")
+new_row = data.frame("Method"="K-Medoids", "Silhouette"=sil)
+scores <- rbind(scores, new_row)
+
+wine_sub <- wine[, 2:13]
+# Perform hierarchical clustering
+hc <- hclust(dist(wine_sub), method = "ward.D2")
+plot(hc) 
+
+# Cut the dendrogram to get 2 clusters
+clusters <- cutree(hc, k = 2)
+# Get the silhouette score for 2 clusters
+sil_width <- silhouette(clusters, dist(wine_sub))
+sil <- mean(sil_width[,3])
+new_row = data.frame("Method"="Hierarchial", "Silhouette"=sil)
+scores <- rbind(scores, new_row)
