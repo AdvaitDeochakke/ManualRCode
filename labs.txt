@@ -1,0 +1,149 @@
+# Lab1
+isArmstrong <- function(x) {
+len <- nchar(as.character(x))
+sum <- 0
+for (i in 1:len) {
+digit <- as.integer(substr(x, i, i))
+sum <- sum + digitˆlen
+}
+return(sum == x)
+}
+# Test the function with some examples
+isArmstrong(153) # TRUE
+
+set.seed(1143)
+X<- rpois(10, 10)
+Y <- rnorm(10)
+sort(X)
+order(X)
+
+RegisterNos <- c(1, 2, 3, 4, 5)
+StuNames <- c('Raj', 'Ram', 'Ramesh', 'Rajesh', 'Suresh')
+StuSubjs <- list(c('EDA', 'Data Vis'), c('AI', 'ML'), c('English', 'Psychology'), c('Test'), c('AnthropoStuYr <- c(2020, 2020, 2021, 2021, 2022)
+StuNoD <- c('SCOPE', 'SCOPE', 'Arts', 'Secret', 'Community')
+StuInsti <- c('VIT', 'VIT', 'Symbiosis', 'FBI', 'Greendale')
+notadataframe <- list(RegisterNos, StuNames, StuSubjs, StuYr, StuNoD, StuInsti)
+notadataframe
+
+
+Name <- c("Aby", "Arya", "Ash", "Adhi")
+Age <- c(20, 19, 19, 20)
+Number <- c("18MIS2022", "18MIS2012", "18MIS0022", "18MIS0002")
+student <- data.frame(Name, Age, Number)
+
+library(dplyr)
+# Group the data by department and gender
+data_by_department_gender <- company %>%
+group_by(Dept, Gender)
+# Calculate the total salary for each group
+data_by_department_gender <- data_by_department_gender %>%
+summarize(Total_Salary = sum(payroll))
+# Print the resulting dataframe
+data_by_department_gender
+
+company %>%
+filter(payroll==max(payroll)) %>%
+select(Name, Dept)
+
+pain %>%
+filter(Club=="Football", Age>=17) %>%
+select(Fname, Location)
+
+pain %>%
+select(Club, Level) %>%
+group_by(Club, Level) %>%
+summarise(count=n())
+
+pain %>%
+select(Fname, DateOfJoining) %>%
+filter(Gender=="F")
+
+pain %>%
+select(DateOfJoining) %>%
+filter(grepl("ˆB", Education))
+
+Lab 2
+
+#for dependent var
+outliers_price <- boxplot.stats(df_outputs$price)$out
+length(outliers_price)
+my3<-df[, c(1, 5, 6, 8, 9, 10)]
+#for independent var
+for(x in 1:ncol(df_inputs))
+{
+  my1<-colnames(df_inputs)
+  f<-sapply(df_inputs, is.numeric)
+  if(!f[x])
+  {
+    print(paste(my1[x], "is a factor"))
+  }
+}
+outliers <- boxplot.stats(df_inputs$carat)$out
+length(outliers) ???
+
+ggplot(data=df, aes(x=cut, color=cut))+geom_histogram(stat="count")
+ggplot(data=df, aes(x=price, y=carat))+geom_point(aes(color=cut), alpha=1/10)+geom_smooth()
+ggplot(data=df, aes(x=price, color=carat))+geom_histogram(stat="count")
+ggplot(data=df, aes(x=color, fill=color))+geom_bar()
+ggplot(data=df, aes(x=clarity, fill=clarity))+geom_bar()
+
+IQR(df$price) # interquartilerange
+
+cormat<-round(cor(my3), 2)
+library(reshape2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + geom_tile()
+
+lab 3
+
+fit <- lm(y~x)
+print(coef(fit))
+
+
+library(ggplot2)
+df <- data.frame(x, y)
+# Generate the plot
+ggplot(df, aes(x, y)) +
+geom_point(color="purple", size=4) +
+geom_abline(intercept = coef(fit)[1], slope = coef(fit)[2], color = "chartreuse") +
+ggtitle("Linear Regression of y on x") +
+xlab("x") +
+ylab("y")
+
+
+residuals <- residuals(fit)
+rs <- (residualsˆ2)
+# RSS is a single number, there is no minimum
+# Finding minimum of the residuals squared and RSS
+print(min(rs))
+
+
+residuals_df <- data.frame(x, residuals)
+ggplot(residuals_df, aes(x, residuals)) +
+geom_point(color="red") +
+ggtitle("Residuals plot") +
+xlab("x") +
+ylab("Residuals")
+
+
+se_coef <- summary(fit)$coef[,2]
+print(se_coef)
+
+confint <- confint(fit, level = 0.95)
+print(confint)
+
+r_squared <- summary(fit)$r.squared
+print(r_squared)
+
+df$predictions <- predict(fit, newdata=df)
+print(df)
+
+scor <- cor(swiss)
+corrplot(scor, order="hclust", method="color", type="lower",
+title="\n\nCorrelation matrix", tl.srt=30)
+
+fit1 <- lm(Examination ~ Fertility + Agriculture + Catholic + Education)
+
+# Summarize the model fit
+summary(fit1)
+
