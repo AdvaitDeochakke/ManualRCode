@@ -1,0 +1,46 @@
+# Load data into a dataframe named df
+df <- read.csv("C:\\Users\\advai\\College Semesters\\22-23 Win\\CSE3020 Data Visualization\\LAB\\Lab-6_TimeSeriesAnlaysis\\NASDAQ_100_Data_From_2010.csv")
+#View(df)
+#summary(df)
+# Print the different stocks which have data available on them
+unique_stocks <- unique(df$Name)
+print(unique_stocks)
+
+# Plot time series charts of the stock "AAPL"
+library(ggplot2)
+library(lubridate)
+
+# Filter the data for stock "AAPL"
+df_AAPL <- df[df$Name == "AAPL",]
+df_AAPL$Date <- ymd(df_AAPL$Date) # Convert Date column to date format
+#summary(df_AAPL)
+#View(df_AAPL)
+
+library(TTR)
+library(forecast)
+df_AAPL$sma_open <- SMA(df_AAPL$Open, n=10)
+df_AAPL$wma_open <- WMA(df_AAPL$Open, n=10, wts=c(3, 3, 2, 2, 1, 1, 2, 2, 3, 3))
+# Plot time series charts of the stock "AAPL" for Open, SMA, sna WMA
+g1 <- ggplot(df_AAPL, aes(x=Date)) + 
+  geom_line(aes(y=Open, color="Open")) +
+  geom_line(aes(y=sma_open, color="SMA"), linetype="dashed") +
+  geom_line(aes(y=wma_open, color="WMA"), linetype="dashed") +
+  scale_color_manual(values=c("Open" = "green", "SMA" = "blue", "WMA" = "red")) +
+  ggtitle("Time series chart of AAPL stock for Open, and SMA and WMA for the same")
+g1
+
+# HoltWinters and ARIMA
+ts_open <- ts(df_AAPL$Open, start=c(2010, 01), frequency=365)
+hw1 <- HoltWinters(ts_open, alpha=0.2, beta=FALSE)
+hw2 <- HoltWinters(ts_open, alpha=0.5, gamma=FALSE)
+
+plot(ts_open, ylim=c(50, 170), xlim=c(2017, 2018), xlab="Years", ylab="Opening Value", main="Holt Winters on two models")
+lines(hw1$fitted[, 1], col="blue", lty=2)
+lines(hw2$fitted[, 1], col="green", lty=2)
+legend("topleft", legend=c("Original Data", "Holt Winters Model 1", "Holt Winters Model 2"), col=c("black", "green", "blue"), lty=c(1, 2, 2))
+
+arima1 <- auto.arima(ts_open)
+plot(forecast(arima1, h=20), ylim=c(50, 170), xlim=c(2017, 2018), 
+     xlab="Years", ylab="Opening Value", main="ARIMA", col="red", lty=2, lwd=2)
+lines(ts_open, col="green")
+legend("topleft", legend=c("Original Data", "ARIMA Model"), col=c("green", "red"), lty=c(1, 2))
