@@ -1,0 +1,92 @@
+#-------------------------------------------------------------------------------
+#Advait Deochakke
+#20BCE1143
+#Lab 2 - CSE3020
+#------------------------------------------------------------------------------
+
+iris
+library(lattice)
+library(ggplot2)
+attach(iris)
+barchart(Species,
+         main="barchart of species",
+         xlab="Species",
+         horizontal=FALSE,
+         col=c("Red", "Blue", "Green"))
+
+dotplot(Petal.Length ~ Sepal.Length | Species,
+        main="Dotplot of petal length to sepal length for each specie",
+        xlab="Sepal Lengths",
+        ylab="Petal Lengths")
+
+xyplot(Petal.Length ~ Sepal.Length | Species,
+       main="Scatter instead of dotplot",
+       xlab="Sepal Lengths",
+       ylab="Petal Lengths")
+
+densityplot(Petal.Length,
+            group=Species,
+            auto.key=TRUE,
+            main = "Comparison of Density for Petal Lengths",
+            xlab="Petal Length")
+
+histogram(Petal.Length,
+          main="Histogram of Petal Lengths")
+
+pl<-bwplot(Petal.Length~Species,
+       panel = panel.violin, 
+       main="Violin Boxplot of Petal Lengths",
+       ylab="Petal Length")
+
+pw<-bwplot(Petal.Width~Species,
+           panel = panel.violin, 
+           main="Violin Boxplot of Petal Widths",
+           ylab="Petal Width")
+
+sl<-bwplot(Sepal.Length~Species,
+           panel = panel.violin, 
+           main="Violin Boxplot of Sepal Lengths",
+           ylab="Sepal Length")
+
+sw<-bwplot(Sepal.Width~Species,
+           panel = panel.violin, 
+           main="Violin Boxplot of Sepal Widths",
+           ylab="Sepal Width")
+
+print(pl, position=c(0, 0.5, 0.5, 1), more=TRUE)
+print(pw, position=c(0.5, 0.5, 1, 1), more=TRUE)
+print(sl, position=c(0, 0, 0.5, 0.5), more=TRUE)
+print(sw, position=c(0.5, 0, 1, 0.5))
+
+splom(iris[c(1, 2, 3, 4)],
+      main="Scatterplots for different variables in IRIS")
+
+cloud(Species ~ Petal.Length * Petal.Width,
+      groups = Species,
+      auto.key = TRUE,
+      xlab="Petal Length",
+      ylab="Petal Width")
+
+View(economics)
+attach(economics)
+
+xyplot(psavert + unemploy/pop*100 ~ date,
+       main="USA economics",
+       key = list(space="right",
+                  lines=list(col=c("blue","magenta"), lty=c(2,2), lwd=6),
+                  text=list(c("Personal Savings Rate", "Unemployment Rate"))),
+       xlab="Date",
+       ylab="Personal Savings Rate (blue)\n Unemployment Rate per million (pink)")
+
+# Customized Lattice Example
+library(lattice)
+panel.smoother <- function(x, y) {
+  panel.xyplot(x, y) # show points
+  panel.loess(x, y)  # show smoothed line
+}
+attach(mtcars)
+hp <- cut(hp,3) # divide horse power into three bands
+xyplot(mpg~wt|hp, scales=list(cex=.8, col="red"),
+   panel=panel.smoother,
+   xlab="Weight", ylab="Miles per Gallon",
+   main="MGP vs Weight by Horse Power")
