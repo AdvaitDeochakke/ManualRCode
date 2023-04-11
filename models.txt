@@ -1,0 +1,180 @@
+#20BCE1143 Advait Deochakke
+
+View(Orange)
+attach(Orange)
+library(ggplot2)
+
+head(Orange, 5)
+
+mean(circumference)
+sd(circumference)
+mad(circumference)
+mean_se(circumference)
+
+lmcirage <- lm(circumference ~ age)
+lmcirage
+
+#intercept is the well, intercept. the value of age is the slope. y=mx+c
+
+lmagecir <- lm(age~circumference)
+
+summary(lmcirage)
+summary(lmagecir)
+
+#The residuals, on avg, are smaller in the circumferenge to age lm
+#same with the std error, so one might say that cir~age is better plot
+#but taking a look at the R squared values, F-stat, and p-val tells us that
+#both are equal predictors
+
+#correlation does not imply causation, just by looking at data we cannot say 
+#whether one causes the other or not
+#by common sense, we can say that trees growing older causes circum to increase
+
+#in both cases, the significant p-val is the same
+#well, it will be. its the same line but flipped
+#again, we cannot imply that signif p-val implies that there is a causal relation
+#between trees growing and them being older, only a correlation
+
+ggplot(Orange, aes(x=circumference, y=age))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  ggtitle("plot of age to circumference")
+ggplot(Orange, aes(y=circumference, x=age))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  ggtitle("plot of circumference to age")
+
+
+
+library(devtools)
+library(ggbiplot)
+
+data <- read.csv("C:\\Users\\advai\\College Semesters\\22-23 Win\\CSE3020 Data Visualization\\LAB\\Lab-5_PCA and LDA\\data.csv", header=TRUE)
+
+#View(data)
+
+# First, separate the target variable and numeric feature variables
+data.class <- data$diagnosis
+data.class <- as.factor(data.class)
+data.numeric <- data[sapply(data, is.numeric)]
+data.values <- data.numeric[!names(data.numeric) %in% c("id")]
+
+# Create a sample of indices to split the data into train and test sets
+indexes <- sample(1:nrow(data.values), 0.7 * nrow(data.values))
+
+# Split the data into training and test sets
+dataX.train <- data.values[indexes, ]
+dataX.test <- data.values[-indexes, ]
+dataY.train <- data.class[indexes]
+dataY.test <- data.class[-indexes]
+
+data.pca <- prcomp(data.values, scale. = TRUE, center = TRUE)
+ggbiplot(data.pca, obs.scale = 2, 
+         groups = data.class, ellipse = TRUE, ellipse.prob = 0.65, 
+         circle = FALSE, alpha = 0.2, var.axes = TRUE) + 
+  theme(legend.direction = "horizontal", legend.position = "top")+
+  scale_color_manual(labels=c("Benign", "Malignant"), values = c("gold", "magenta"))
+
+pca.firstsix <- data.frame(data.pca$x[, 1:6])
+
+# Logistic Regression Model
+model_logit_pca <- glm(dataY.train ~ ., data=pca.firstsix[indexes, ], family="binomial")
+model_logit_og <- glm(dataY.train ~ ., data=dataX.train, family="binomial")
+
+#summary(model_logit_pca)
+#summary(model_logit_og)
+
+predictions_logit_pca <- as.factor(
+  ifelse(
+    predict(model_logit_pca, newdata = pca.firstsix[-indexes, ], type = "response") > 0.5, "M", "B"))
+predictions_logit_og <- as.factor(
+  ifelse(
+    predict(model_logit_og, newdata = dataX.test, type = "response") > 0.5, "M", "B"))
+
+library(caret)
+clp<-confusionMatrix(predictions_logit_pca, dataY.test)
+clo<-confusionMatrix(predictions_logit_og, dataY.test)
+
+# glm.fit: fitted probabilities numerically 0 or 1 occurred 
+# as there is some variable or combination of variables that perfectly classifies them
+
+# Decision Tree Model
+library(rpart)
+model_tree_pca <- rpart(dataY.train ~ ., data=pca.firstsix[indexes, ], method="class")
+model_tree_og <- rpart(dataY.train ~ ., data=dataX.train, method="class")
+
+#print(model_tree_pca)
+#print(model_tree_og)
+
+predictions_tree_pca <- predict(model_tree_pca, newdata = pca.firstsix[-indexes, ], type = "class")
+predictions_tree_og <- predict(model_tree_og, newdata = dataX.test, type = "class")
+
+ctp<-confusionMatrix(predictions_tree_pca, dataY.test)
+cto<-confusionMatrix(predictions_tree_og, dataY.test)
+
+# Support Vector Machine Model
+library(e1071)
+model_svm_pca <- svm(dataY.train ~ ., data=pca.firstsix[indexes, ], type="C-classification")
+model_svm_og <- svm(dataY.train ~ ., data=dataX.train, type="C-classification")
+
+#summary(model_svm_pca)
+#summary(model_svm_og)
+
+predictions_svm_pca <- predict(model_svm_pca, newdata = pca.firstsix[-indexes, ], type = "class")
+predictions_svm_og <- predict(model_svm_og, newdata = dataX.test, type = "class")
+
+csp<-confusionMatrix(predictions_svm_pca, dataY.test)
+cso<-confusionMatrix(predictions_svm_og, dataY.test)
+
+#comparing accuracies only, but all metrics are available in the confusion matrices
+method.used <- c("Log Pca", "Log OG", "Tree Pca", "Tree OG", "SVM Pca", "SVM OG")
+accuracy.obtained <- c(clp$overall[1], clo$overall[1], ctp$overall[1], cto$overall[1], csp$overall[1], cso$overall[1])
+comparison.frame <- data.frame(method.used, accuracy.obtained)
+print(comparison.frame[order(comparison.frame$accuracy.obtained, decreasing = TRUE), ])
+
+library(microbenchmark)
+microbenchmark(
+  logit_pca = { model_logit_pca },
+  logit_og = { model_logit_og },
+  tree_pca = { model_tree_pca },
+  tree_og = { model_tree_og },
+  svm_pca = { model_svm_pca },
+  svm_og = { model_svm_og }
+)
+
+
+# Load the required library
+library(MASS)
+
+# Load the iris dataset
+data(iris)
+
+# Perform LDA analysis
+lda_model <- lda(Species ~ ., data = iris)
+
+# Project the iris data onto the LDA axes
+lda_projection <- predict(lda_model, iris)
+
+# Plot the LDA projection of the iris data
+plot(lda_projection$x[, 1], lda_projection$x[, 2], 
+     col = lda_projection$class,
+     main = "LDA 2D Projection of Iris dataset", 
+     xlab = "LD1", ylab = "LD2")
+
+#"prcomp" performs PCA using singular value 
+#decomposition of the covariance matrix 
+#while "princomp" performs PCA using singular value 
+#decomposition of the correlation matrix.
+
+# Perform PCA analysis
+pca_model <- princomp(iris[, -5], cor = FALSE)
+
+# Project the iris data onto the PCA axes
+pca_projection <- predict(pca_model, iris[, -5])
+
+# Plot the PCA projection of the iris data
+plot(pca_projection[, 1], pca_projection[, 2], 
+     col = iris$Species,
+     main = "PCA 2D Projection of Iris dataset", 
+     xlab = "PC1", ylab = "PC2")
+
