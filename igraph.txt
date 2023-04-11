@@ -1,0 +1,169 @@
+---
+title: "Lab 7 Data Viz"
+author: "Advait Deochakke 20BCE1143"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+Lab 7 - iGraph
+
+1) Read provided adjmatrix
+
+{r}
+adj_mat <- read.csv("C:\\Users\\advai\\College Semesters\\22-23 Win\\CSE3020 Data Visualization\\LAB\\Lab-7_NWDataVis.Using_iGraph\\Lab6-DataSet_Adjacency.csv")
+
+2) Read provided edgmatrix
+
+{r}
+edg_mat <- read.csv("C:\\Users\\advai\\College Semesters\\22-23 Win\\CSE3020 Data Visualization\\LAB\\Lab-7_NWDataVis.Using_iGraph\\Lab6-DataSet_Edges.csv")
+
+3) Create and plot graphs of above, customize
+
+{r}
+library(igraph)
+g1 <- graph.data.frame(edg_mat, directed = FALSE)
+plot(g1, layout=layout.gem(g1), edge.arrow.size=0.4, edge.color="black", vertex.color="pink", vertex.size=40, mark.expand = 75)
+
+{r}
+years <- as.character(2000:2010)
+adj_mat_square <- `dimnames<-`(as.matrix(adj_mat[, -1]), 
+                               list(years, years))
+
+g2 <- graph.adjacency(adj_mat_square, mode = "undirected")
+plot.igraph(g2, layout=layout.auto(g2), edge.arrow.size=0.4, edge.color="black", vertex.color="pink", vertex.size=40, mark.expand = 75)
+
+
+4) Display the edges & vertices, the network as matrix and the names of vertices
+
+{r}
+# Display the edges
+E(g2)
+
+# Display the vertices
+V(g2)
+
+# Display the network as a matrix
+as_adjacency_matrix(g2)
+
+# Display the names of vertices
+V(g2)$name
+
+5) Find the count of vertices and edges of the created graph
+
+{r}
+# Count of vertices
+vcount(g2)
+
+# Count of edges
+ecount(g2)
+
+6) Display the adjacency vertices of each vertex(individual) in the created graph
+
+{r}
+for (i in 1:vcount(g2)) {
+  neighbors_i <- neighbors(g2, i)
+  print(paste("Adjacency vertices of vertex", i, ":", paste(neighbors_i, collapse = ", ")))
+}
+
+7) Find the min and max degree of the created graph
+
+{r}
+# Find the degree of each vertex
+degrees <- degree(g2)
+
+# Find the minimum degree
+min_degree <- min(degrees)
+
+# Find the maximum degree
+max_degree <- max(degrees)
+
+# Print the minimum and maximum degree
+print(paste("Minimum degree:", min_degree))
+print(paste("Maximum degree:", max_degree))
+
+8) Set vertex attributes
+
+{r}
+# Create a new vertex attribute called "profit"
+profit_values <- c("+", "-", "+", "-", "+", "-", "+", "-", "+", "+", "-")
+
+# create a new graph g3 to set vertices and change edges
+g3 <- graph.adjacency(adj_mat_square, mode = "directed") %>%
+  set_vertex_attr("profit", value = profit_values)
+
+
+9) Non/Leap year
+
+{r}
+# Create a vector of year types
+leap_years <- c(2000, 2004, 2008)
+year_types <- rep("non-leap year", 11)
+year_types[which(as.numeric(V(g2)$name) %in% leap_years)] <- "leap year"
+#(year_types)
+
+# Create a new vertex attribute called "type"
+g3 <- g3 %>%
+  set_vertex_attr("type", value = year_types)
+#vertex.attributes(g3, index = V(g3))
+
+10) Weight of leap vertices to 5
+
+{r}
+# Access edges of the graph
+edges <- E(g3)
+flip <- c()
+# Set the weight attribute for each edge
+for (e in edges) {
+  v1 <- V(g3)$name[tail_of(g3, e)] #soruce of the edge
+  v2 <- V(g3)$name[head_of(g3, e)] #destination of the edge
+  #print(v1)
+  #print(v2)
+  # Check if both vertices are leap years
+  #print(e)
+  if (v1 %in% c(2000,2004,2008) | v2 %in% c(2000,2004,2008))
+  {
+    E(g3)$weight[e] <- 5#print(paste(v1, v2, 5))
+    # put it in flip_edges
+    flip <- append(flip, e)
+    #set_edge_attr(g2, "to_flip", index=E(g2), value=c(1:10))
+  }
+  else
+  {
+    E(g3)$weight[e] <- 1#print(paste(v1, v2, 1))
+    # dont put it in flip edges
+  }
+}
+#print(flip)
+
+print(edge_attr(g3))
+#edge_attr_names(g2)
+
+11) Convert to directed graph
+
+{r}
+
+#reverse_edges(g3, flip)
+
+
+plot.igraph(g3, layout = layout.star(g3), edge.arrow.size=0.4, edge.color="black", vertex.color="pink", vertex.size=40, mark.expand = 150)
+
+12) Adj matrix of directed g2
+
+{r}
+as_adjacency_matrix(g3)
+
+13) In/Out-degrees
+
+{r}
+# Calculate the in-degree of each vertex
+indegree <- degree(g3, mode = "in")
+
+# Calculate the out-degree of each vertex
+outdegree <- degree(g3, mode = "out")
+
+# Print the results
+print(paste("The in-degree is ", indegree, "and the out-degree is ", outdegree))
+
