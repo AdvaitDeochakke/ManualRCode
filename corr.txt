@@ -1,0 +1,67 @@
+library(ggplot2)
+library(corrplot)
+
+#Advait Deochakke 20BCE1143
+
+data1 <- read.csv("C:\\Users\\advai\\College Semesters\\22-23 Win\\CSE3020 Data Visualization\\LAB\\Lab 3\\Lab-3_CorrelationPlot\\churn_data.csv", header=TRUE)
+
+#removing the 4 rows with age 
+median_age <- median(data1$age, na.rm=TRUE)
+na_rows <- is.na(data1$age)
+data1$age[na_rows] <- median_age
+
+na_cells <- is.na(data1) & !is.na(0)
+data1[na_cells] <- 0
+keep_cols <- names(data1)[!names(data1) %in% c("housing", "payment_type", "zodiac_sign")]
+
+data<- data1[, keep_cols]
+
+mycor <- cor(data)
+corrplot(mycor, method="color", type="upper", tl.srt=60, tl.col="black", order="hclust")
+
+corrplot(mycor, method="pie", type="lower", tl.srt=45, tl.col="black", order="hclust", title="\n\n\nfuller pie emphasizes\nhigher value")
+
+col<- colorRampPalette(c("purple", "magenta", "orange"))(20)
+corrplot(mycor, type="lower", order="hclust", col=col, tl.col="black", tl.srt=45, title="\n\n\nlarger circle implies\nhigher value")
+
+library(RColorBrewer)
+corrplot(mycor, method="color", type="lower", order="hclust",
+         col=brewer.pal(n=8, name="Spectral"),
+         tl.srt=45, tl.col="blue")
+
+churn_cor <- as.data.frame(colnames(mycor))
+churn_cor$correlation <- as.vector(mycor[, 2])
+churn_cor$xdata <- churn_cor[, 1]
+churn_cor <- churn_cor[-2, ]
+churn_cor <- churn_cor[order(churn_cor$correlation), ]
+
+ggplot(churn_cor, aes(x=xdata,  y=correlation))+
+  geom_col(position="dodge", aes(fill=xdata))+
+  theme(axis.text.x = element_blank())+
+  ylab("Degree of Correlation")+
+  xlab("Various Factors")+
+  ggtitle("correlation of all factors to churn rate \nas individual predictors")
+
+#showing that zodiac sign does not have much to do with churn rate
+
+library(viridisLite)
+data1$factor_churn <- cut(data1$churn, 2, labels=c("No", "Yes"))
+ggplot(data1, aes(fill=factor_churn, x=housing, y=factor_churn))+
+  geom_bar(stat="identity", position="fill")+
+  scale_fill_viridis_d()+
+  facet_wrap(~payment_type)+
+  theme(axis.text.y = element_blank())+
+  ylab("Whether Churn")+
+  xlab("Divided on payment type\nEach column is a housing type")+
+  ggtitle("comparing the churn rate based on housing type\nfor all housing types")
+
+ggplot(data1, aes(fill=factor_churn, x=zodiac_sign, y=factor_churn))+
+  geom_bar(stat="identity", position="stack")+
+  scale_fill_viridis_d(option="C")
+
+ggplot(data1, aes(fill=factor_churn, x=payment_type, y=factor_churn))+
+  geom_bar(stat="identity", position="fill")+
+  scale_fill_viridis_d(option="D")+
+  theme(axis.text.y=element_blank())
+
+
