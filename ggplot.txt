@@ -1,0 +1,21 @@
+library(ggplot2)
+library(ggvis)
+ggplot(diamonds) + geom_point(aes(x=carat, y=price, color=cut), alpha=3/10) +
+  geom_smooth(aes(x=carat, y=price), color="black") +
+  theme(axis.title=element_text(size=18, color="magenta", face="italic")) +
+  scale_color_discrete(name="Diamond Cuttings") +
+  facet_wrap(~cut, nrow=3)
+  
+  ylim.prim <- c(0, 10000)
+ylim.sec <- c(0, 5)
+b <- diff(ylim.prim)/diff(ylim.sec)
+a <- ylim.prim[1] - b*ylim.sec[1]
+
+p1 <- ggplot(mydata) +
+  geom_bar(aes(x=Age.Group, y=No..of.Loans), stat="identity", color="grey") +
+  xlab('Age Groups') +
+  ylab('Number of Loans Taken') +
+  geom_line(aes(x=Age.Group, y=a+Bad.Rate*b, group=1), color="blue", stat="identity") +
+  scale_y_continuous('Number of Loans Taken', sec.axis = sec_axis(~ (. - a)/b, name = "Bad Rate"))
+p1
+
