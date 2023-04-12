@@ -1,0 +1,8 @@
+SCRIPT_REAL("
+import scipy.stats
+return scipy.stats.pearsonr(_arg1, _arg2)[0]
+",
+SUM([Profit]),
+SUM([Discount])
+)
+
