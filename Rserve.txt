@@ -1,0 +1,29 @@
+SCRIPT_INT("
+library(stats)
+set.seed(1143)
+pw <- (.arg1 - mean(.arg1)) / sd(.arg1)
+pw1 <- (.arg2 - mean(.arg2)) / sd(.arg2)
+
+dat <- cbind(pw, pw1)
+
+kmeans(dat, 3, algorithm='Lloyd')$cluster
+" ,
+AVG([PL]),
+AVG([PW]))
+
+SCRIPT_INT("
+library(stats)
+pw1 <- (.arg1 - mean(.arg1)) / sd(.arg1)
+pw2 <- (.arg2 - mean(.arg2)) / sd(.arg2)
+pw3 <- (.arg3 - mean(.arg3)) / sd(.arg3)
+pw4 <- (.arg4 - mean(.arg4)) / sd(.arg4)
+
+dat <- data.frame(pw1, pw2, pw3, pw4)
+
+kmeans(dat, 2)$cluster
+
+",
+AVG([Age]),
+AVG([Cars]),
+AVG([Children]),
+AVG([Income]) )
