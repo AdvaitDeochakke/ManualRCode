@@ -1,0 +1,13 @@
+HClust.txt #EDA
+LogReg.txt #EDA
+NB.txt #EDA
+Rserve.txt #DV
+TS.txt #EDA + DV
+TabPy.txt #DV
+corr.txt #DV
+ggplot.txt #DV
+igraph.txt #DV 
+labs.txt #EDA + a bit of DV
+lattice.txt #DV
+models.txt #DV
+timeseries.txt #DV
